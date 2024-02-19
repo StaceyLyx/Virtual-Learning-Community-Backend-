@@ -1,0 +1,152 @@
+DROP DATABASE communityDB;
+CREATE DATABASE communityDB;
+USE communityDB;
+
+# 建表语句
+CREATE TABLE IF NOT EXISTS user (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	username VARCHAR(40) NOT NULL, 
+	email VARCHAR(40) NOT NULL,
+	phone_num VARCHAR(40) NOT NULL,
+	password VARCHAR(100) NOT NULL,
+	ev INT UNSIGNED DEFAULT(0),
+          status INT UNSIGNED DEFAULT(0),
+	register_date TIMESTAMP,
+          gender VARCHAR(100) NOT NULL,
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS authority (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	name VARCHAR(10),
+	PRIMARY KEY (id)
+	# 可以有一些一类权限的人共有的属性
+);
+
+CREATE TABLE IF NOT EXISTS user_authority (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	user_id INT UNSIGNED,
+	authority_id INT UNSIGNED,
+	PRIMARY KEY (id),
+	FOREIGN KEY(user_id) REFERENCES user(id),
+	FOREIGN KEY(authority_id) REFERENCES authority(id)
+); 
+
+CREATE TABLE IF NOT EXISTS image (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	name VARCHAR(10),
+	type VARCHAR(40),
+	content VARCHAR(300),
+	PRIMARY KEY (id)
+	# 可以有一些一类权限的人共有的属性
+);
+
+CREATE TABLE IF NOT EXISTS dress (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	user_id INT UNSIGNED,
+	image_id INT UNSIGNED,
+	PRIMARY KEY (id),
+	FOREIGN KEY(user_id) REFERENCES user(id),
+	FOREIGN KEY(image_id) REFERENCES image(id)
+); 
+
+CREATE TABLE IF NOT EXISTS task (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	name VARCHAR(40) NOT NULL, 
+	description VARCHAR(300) DEFAULT(""),
+	ev INT UNSIGNED NOT NULL,
+	publisher_id INT UNSIGNED NOT NULL,
+	optional TINYINT, # 0选修 1必修
+	team_size TINYINT,
+	ddl TIMESTAMP,
+	validity TINYINT DEFAULT(0), # 0未审核 1审核通过 2任务过期 3审核不通过
+          is_free TINYINT DEFAULT(0), # 0非自由任务（老师助教发布)  1自由任务（学生发布）
+	PRIMARY KEY (id),
+	FOREIGN KEY(publisher_id) REFERENCES user(id)
+);
+
+CREATE TABLE IF NOT EXISTS accept (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	user_id INT UNSIGNED NOT NULL,
+	task_id INT UNSIGNED NOT NULL, 
+	checked TINYINT DEFAULT(0), # 0进行中 1已提交 2已完成 3超时
+	file VARCHAR(200),
+	PRIMARY KEY (id),
+	FOREIGN KEY(user_id) REFERENCES user(id),
+	FOREIGN KEY(task_id) REFERENCES task(id)
+);
+
+CREATE TABLE IF NOT EXISTS v_class (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	name VARCHAR(40) NOT NULL,
+	course_name VARCHAR(40) NOT NULL,
+	PRIMARY KEY (id)
+);
+
+
+CREATE TABLE IF NOT EXISTS class_task (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	class_id INT UNSIGNED NOT NULL,
+	task_id INT UNSIGNED NOT NULL,
+	PRIMARY KEY (id),
+	FOREIGN KEY(class_id) REFERENCES v_class(id),
+	FOREIGN KEY(task_id) REFERENCES task(id)
+);
+
+CREATE TABLE IF NOT EXISTS v_group (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	name VARCHAR(40) DEFAULT(""),
+	task_id INT UNSIGNED,
+	group_leader INT UNSIGNED,
+          checked TINYINT DEFAULT(0), # 0进行中 1已提交 2已完成 3超时
+	process TINYINT DEFAULT(0), #组队情况
+	file varchar(200),
+	PRIMARY KEY (id),
+	FOREIGN KEY(task_id) REFERENCES task(id),
+	FOREIGN KEY(group_leader) REFERENCES user(id)
+);
+
+CREATE TABLE IF NOT EXISTS message (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	group_id INT UNSIGNED DEFAULT(0), # 0整个虚拟社区 其他数字为group_id ：设置status的可见性 
+	status VARCHAR(200),
+	PRIMARY KEY (id),
+	FOREIGN KEY(group_id) REFERENCES v_group(id)
+);
+
+CREATE TABLE IF NOT EXISTS send (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	user_id INT UNSIGNED,
+	message_id INT UNSIGNED,
+	PRIMARY KEY (id),
+	FOREIGN KEY(user_id) REFERENCES user(id),
+	FOREIGN KEY(message_id) REFERENCES message(id)
+);
+
+CREATE TABLE IF NOT EXISTS in_group (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	user_id INT UNSIGNED,
+	group_id INT UNSIGNED,
+	PRIMARY KEY (id),
+	FOREIGN KEY(user_id) REFERENCES user(id),
+	FOREIGN KEY(group_id) REFERENCES v_group(id)
+);
+
+CREATE TABLE IF NOT EXISTS room (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	name VARCHAR(40) NOT NULL,
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS occupy (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL,
+	group_id INT UNSIGNED,
+	room_id INT UNSIGNED,
+	PRIMARY KEY (id),
+	FOREIGN KEY(group_id) REFERENCES v_group(id),
+	FOREIGN KEY(room_id) REFERENCES room(id)
+);
+
+# 建立世界group
+
+
